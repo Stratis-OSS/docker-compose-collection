@@ -1,0 +1,46 @@
+# How to run:
+# docker compose -f compose.yml up -d
+
+name: keycloak
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.5
+    container_name: keycloak
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8443:8443"
+    volumes:
+      - keycloak-data:/opt/keycloak
+      # Enable HTTPS (Self-signed certificate)
+      - ./conf/keycloak.crt:/opt/keycloak/conf/server.crt
+      - ./conf/keycloak.key:/opt/keycloak/conf/server.key
+      # Add GSIS OAuth2.0 providers to Keycloak
+      - ./keycloak-gsis-providers-java-17-v1.0.0-SNAPSHOT.jar:/opt/keycloak/providers/keycloak-gsis-providers-java-17-v1.0.0-SNAPSHOT.jar
+    command: start-dev
+    depends_on:
+      keycloak-database:
+        condition: service_healthy
+
+  keycloak-database:
+    image: postgres:latest
+    container_name: keycloak-database
+    restart: always
+    env_file:
+      - .database.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - keycloak-database-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "$$POSTGRES_USER" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  keycloak-data:
+    driver: local
+  keycloak-database-data:
+    driver: local
