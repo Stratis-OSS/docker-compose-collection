@@ -11,37 +11,31 @@ services:
       kafka:
         condition: service_healthy
 
-  kafka-init:
+  kafka-init-topics:
     image: apache/kafka:4.1.1
+    container_name: kafka-init-topics
+    restart: "no"
+    env_file:
+      - .env
+    volumes:
+      # location of the topics' init script
+      - ./init-topics.sh:/init-topics.sh:ro
+    entrypoint: ["/bin/bash", "/init-topics.sh"]
     depends_on:
       kafka:
         condition: service_healthy
-    command: >
-      sh -c '
-        /opt/kafka/bin/kafka-topics.sh \
-          --create --topic topic1 \
-          --bootstrap-server kafka-broker:9092 \
-          --command-config <(echo -e "security.protocol=SASL_PLAINTEXT\nsasl.mechanism=PLAIN\nsasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${KAFKA_USERNAME}\" password=\"${KAFKA_PASSWORD}\";") \
-          --partitions 1 --replication-factor 1 && \
-
-        /opt/kafka/bin/kafka-topics.sh \
-          --create --topic topic2 \
-          --bootstrap-server kafka-broker:9092 \
-          --command-config <(echo -e "security.protocol=SASL_PLAINTEXT\nsasl.mechanism=PLAIN\nsasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${KAFKA_USERNAME}\" password=\"${KAFKA_PASSWORD}\";") \
-          --partitions 1 --replication-factor 1
-      '
 
   kafka:
     image: apache/kafka:4.1.1
     hostname: kafka-broker
     container_name: kafka-broker
+    env_file:
+      - .env
     expose:
       - $KAFKA_INTERNAL_PORT
     ports:
       - "9093:$KAFKA_CONTROLLER_PORT"
       - "9094:$KAFKA_EXTERNAL_PORT"
-    env_file:
-      - .env
     healthcheck:
       test: >
         bash -c 'echo -e "sasl.mechanism=PLAIN\nsecurity.protocol=SASL_PLAINTEXT\nsasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${KAFKA_USERNAME}\" password=\"${KAFKA_PASSWORD}\";" > /tmp/client.properties && /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:${KAFKA_INTERNAL_PORT} --command-config /tmp/client.properties && rm -f /tmp/client.properties'
