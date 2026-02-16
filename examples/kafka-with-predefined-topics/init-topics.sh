@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-# This script runs inside the official kafka docker image during first start
-# (placed in /docker-entrypoint-inittopics.d/)
+# This script runs inside the official kafka docker image during first start.
 
 if [ -z "$KAFKA_TOPICS" ]; then
   echo "No topics requested → exiting"
