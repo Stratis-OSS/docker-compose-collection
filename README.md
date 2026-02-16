@@ -4,5 +4,6 @@ My growing public collection of battle-tested, ready-to-use docker-compose files
 
 ## Examples
 
+- [kafka-with-predefined-topics](./examples/kafka-with-predefined-topics/README.md)
 - [keycloak-with-greek-gsis-providers](./examples/keycloak-with-greek-gsis-providers/README.md)
 - [postgres-with-multiple-databases](./examples/postgres-with-multiple-databases/README.md)
