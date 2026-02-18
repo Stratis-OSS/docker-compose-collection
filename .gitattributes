@@ -1,0 +1,11 @@
+###############################################################################
+# Set default behavior to automatically normalize line endings.
+###############################################################################
+*               text=auto
+
+*.yaml      text
+*.yml       text
+*.json      text
+*.sh        eol=lf
+*.conf      eol=lf
+Dockerfile  text
